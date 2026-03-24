@@ -1,4 +1,4 @@
-apply plugin: 'com.android.application
+7778apply plugin: 'com.android.application
 package com.example.codelauncherphone;
 
 import android.os.Bundle;
@@ -119,5 +119,84 @@ public class MainActivity extends AppCompatActivity {
     /* ================= 函数式接口 ================= */
     interface SafeRunnable {
         void run() throws Exception;
+        package com.example.codelauncherphone;
+
+import android.os.Bundle;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.GridView;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import java.util.ArrayList;
+
+public class MainActivity extends AppCompatActivity {
+
+    private GridView tagGridView;
+    private ArrayList<String> tagList;
+    private ArrayAdapter<String> tagAdapter;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        SafeRun.run(() -> {
+            setContentView(R.layout.activity_main);
+
+            ContextProvider.init(this);
+
+            tagGridView = findViewById(R.id.tagGridView);
+
+            tagList = new ArrayList<>();
+            tagList.add("功能A");
+            tagList.add("功能B");
+            tagList.add("功能C");
+            tagList.add("功能D");
+            tagList.add("功能E");
+            tagList.add("功能F");
+
+            tagAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, tagList);
+            tagGridView.setAdapter(tagAdapter);
+
+            tagGridView.setOnItemClickListener((parent, view, position, id) ->
+                SafeRun.run(() -> showRenameTagDialog(position))
+            );
+
+            tagGridView.setOnItemLongClickListener((parent, view, position, id) -> {
+                SafeRun.run(() -> {
+                    if (position >= 0 && position < tagList.size()) {
+                        tagList.remove(position);
+                        tagAdapter.notifyDataSetChanged();
+                    }
+                });
+                return true;
+            });
+        });
+    }
+
+    private void showRenameTagDialog(int position) {
+        SafeRun.run(() -> {
+            EditText input = new EditText(this);
+            input.setHint("输入新标签名");
+            input.setText(tagList.get(position));
+
+            new AlertDialog.Builder(this)
+                    .setTitle("修改标签名称")
+                    .setView(input)
+                    .setPositiveButton("确定", (dialog, which) -> {
+                        SafeRun.run(() -> {
+                            String newName = input.getText().toString().trim();
+                            if (!newName.isEmpty() && position < tagList.size()) {
+                                tagList.set(position, newName);
+                                tagAdapter.notifyDataSetChanged();
+                            }
+                        });
+                    })
+                    .setNegativeButton("取消", null)
+                    .show();
+        });
     }
 }
+
+
+    
