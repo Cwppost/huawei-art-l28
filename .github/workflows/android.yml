@@ -132,3 +132,87 @@ public class MainActivity extends AppCompatActivity {
         void run() throws Exception;
     }
 }
+
+                return true;
+            });
+
+        } catch (Exception e) {
+            Toast.makeText(this, "页面加载失败", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * ✅ 自动修复机制
+     */
+    private void autoFixIfNeeded() {
+        try {
+            if (tagList == null) {
+                tagList = new ArrayList<>();
+            }
+            if (tagList.isEmpty()) {
+                tagList.add("默认功能");
+                notifyAdapterSafe();
+            }
+        } catch (Exception ignored) {
+        }
+    }
+
+    private boolean isPositionValid(int position) {
+        return position >= 0 && position < tagList.size();
+    }
+
+    private void safeExecute(SafeRunnable runnable) {
+        try {
+            runnable.run();
+        } catch (Exception e) {
+            Toast.makeText(this, "操作异常，请重试", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void notifyAdapterSafe() {
+        try {
+            if (tagAdapter != null) {
+                tagAdapter.notifyDataSetChanged();
+            }
+        } catch (Exception ignored) {
+        }
+    }
+
+    private void showRenameTagDialog(final int position) {
+        if (!isPositionValid(position)) return;
+
+        try {
+            final EditText input = new EditText(this);
+            input.setHint("输入新标签名");
+            input.setText(tagList.get(position));
+
+            new AlertDialog.Builder(this)
+                    .setTitle("修改标签名称")
+                    .setView(input)
+                    .setPositiveButton("确定", (dialog, which) -> {
+                        try {
+                            String newName = input.getText().toString().trim();
+                            if (newName.isEmpty()) {
+                                Toast.makeText(MainActivity.this, "名称不能为空", Toast.LENGTH_SHORT).show();
+                                return;
+                            }
+                            if (isPositionValid(position)) {
+                                tagList.set(position, newName);
+                                notifyAdapterSafe();
+                            }
+                        } catch (Exception e) {
+                            Toast.makeText(MainActivity.this, "修改失败", Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .setNegativeButton("取消", null)
+                    .show();
+
+        } catch (Exception e) {
+            Toast.makeText(this, "对话框打开失败", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    interface SafeRunnable {
+        void run() throws Exception;
+    }
+}
